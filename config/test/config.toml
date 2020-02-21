@@ -1,0 +1,12 @@
+[log]
+  level             = -1
+  log_color         = false
+  is_console        = true
+  log_path_dir      = "."
+  log_file_name     = "log.log"
+  log_file_size     = "1MB"
+  write_chan_size   = 999999
+  caller            = true
+  server_name       = "test"
+  time_field_format = "2006-01-02 15:04:05"
+  default           = true
