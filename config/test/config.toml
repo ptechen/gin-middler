@@ -1,6 +1,6 @@
 [log]
   level             = -1
-  log_color         = false
+  log_color         = true
   is_console        = true
   log_path_dir      = "."
   log_file_name     = "log.log"

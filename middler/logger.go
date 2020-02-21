@@ -51,8 +51,8 @@ import (
 //	}
 //}
 
-func MiddleLogger(logger *zerolog.Logger) gin.HandlerFunc {
-	return LoggerWithConfig(logger, gin.LoggerConfig{})
+func MiddleLogger(logger *zerolog.Logger, conf gin.LoggerConfig) gin.HandlerFunc {
+	return LoggerWithConfig(logger, conf)
 }
 
 func LoggerWithConfig(logger *zerolog.Logger, conf gin.LoggerConfig) gin.HandlerFunc {
@@ -72,14 +72,12 @@ func LoggerWithConfig(logger *zerolog.Logger, conf gin.LoggerConfig) gin.Handler
 		// Start timer
 		start := time.Now()
 		path := c.Request.URL.Path
-		raw := c.Request.URL.RawQuery
 
 		// Process request
 		c.Next()
 
 		// Log only when path is not being skipped
 		if _, ok := skip[path]; !ok {
-			keys := c.Keys
 			// Stop timer
 			timeStamp := time.Now()
 			latency := timeStamp.Sub(start)
@@ -88,41 +86,31 @@ func LoggerWithConfig(logger *zerolog.Logger, conf gin.LoggerConfig) gin.Handler
 			statusCode := c.Writer.Status()
 			errorMessage := c.Errors.ByType(gin.ErrorTypePrivate).String()
 			bodySize := c.Writer.Size()
-
-			if raw != "" {
-				path = path + "?" + raw
-			}
-
-			params, _ := c.Get("params")
+			req, _ := c.Get("req")
 			res, _ := c.Get("res")
 			if errorMessage != "" {
 				logger.Error().
 					Str("router", c.Request.URL.String()).
-					Interface("keys", keys).
 					Int("status", statusCode).
 					Dur("latency", latency).
 					Str("method", method).
-					Str("path", path).
 					Str("client_ip", clientIP).
-					Interface("params", params).
-					Int("body_size", bodySize).
-					Interface("skip", skip).
+					Interface("req", req).
 					Interface("res", res).
+					Int("body_size", bodySize).
 					Msg(errorMessage)
 
 			} else {
 				logger.Info().
 					Str("router", c.Request.URL.String()).
-					Interface("keys", keys).
 					Int("status", statusCode).
 					Dur("latency", latency).
 					Str("method", method).
 					Str("client_ip", clientIP).
-					Interface("params", params).
-					Int("body_size", bodySize).
-					Interface("skip", skip).
+					Interface("req", req).
 					Interface("res", res).
-					Msg("success")
+					Int("body_size", bodySize).
+					Send()
 			}
 		}
 	}
